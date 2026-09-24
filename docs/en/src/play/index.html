@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>caml-prépa — playground</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>caml-prépa <small>playground</small></h1>
+      <p>A compiler for the OCaml subset taught in French <em>classes préparatoires</em>, running in your browser. The parser, the type checker, the interpreter and the Python back end are the ones the test suite runs; the scope trees under <strong>Names</strong> are derived by <a href="https://astero.lab.abilian.com">astero</a> from one declaration.</p>
+      <nav>
+        <a href="../">caml-prépa</a>
+        <a href="../language/playground/">How to use this</a>
+        <a href="../language/tour/">The language</a>
+        <a href="../language/reference/">Reference card</a>
+        <a class="switch" href="../../fr/play/" data-lang="fr"
+          >Français</a
+        >
+      </nav>
+    </header>
+
+    <div class="bar">
+      <label for="example">Programme</label>
+      <select id="example" disabled></select>
+      <button id="run-button" disabled>Run</button>
+      <button id="share" class="quiet" disabled>Copy link</button>
+      <span id="status" role="status">starting…</span>
+    </div>
+
+    <main>
+      <section class="pane">
+        <h2>Source</h2>
+        <textarea
+          id="source"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          aria-label="Source"
+        ></textarea>
+      </section>
+
+      <section class="pane">
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-view="run">Run</button>
+          <button role="tab" aria-selected="false" data-view="types">Types</button>
+          <button role="tab" aria-selected="false" data-view="names">Names</button>
+          <button role="tab" aria-selected="false" data-view="python">Python</button>
+          <button role="tab" aria-selected="false" data-view="printed">Printed</button>
+          <button role="tab" aria-selected="false" data-view="step">Step</button>
+        </div>
+        <p id="errors" hidden></p>
+        <pre id="run" class="view"></pre>
+        <pre id="types" class="view" hidden></pre>
+        <pre id="names" class="view" hidden></pre>
+        <pre id="python" class="view" hidden></pre>
+        <pre id="printed" class="view" hidden></pre>
+
+        <div id="step" class="view" hidden>
+          <div class="transport">
+            <button data-step="start" title="First step">&#x23ee;</button>
+            <button data-step="out" title="Out of this call">&#x21b0;</button>
+            <button data-step="back" title="Back one">&#x25c0;</button>
+            <button data-step="forward" title="Forward one">&#x25b6;</button>
+            <button data-step="in" title="Into the next call">&#x21b3;</button>
+            <button data-step="end" title="Last step">&#x23ed;</button>
+            <input id="step-at" type="range" min="0" max="0" value="0"
+                   aria-label="Position in the run" />
+            <span id="step-count" class="count"></span>
+            <button id="step-cursor" class="quiet">Run to cursor</button>
+          </div>
+          <p id="step-note" hidden></p>
+          <pre id="step-source" class="mirror"></pre>
+          <p id="step-where"></p>
+          <div class="step-grid">
+            <section>
+              <h3>Names in scope</h3>
+              <table id="step-env"></table>
+            </section>
+            <section>
+              <h3>Mutable cells</h3>
+              <table id="step-store"></table>
+            </section>
+          </div>
+          <h3>The compiled Python, at this point</h3>
+          <pre id="step-python" class="mirror"></pre>
+          <h3>Printed so far</h3>
+          <pre id="step-output"></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs. <strong>Types</strong> is Hindley-Milner with the value restriction. <strong>Python</strong> is what the second back end emits, and it is executed too: the status line says whether it printed what the interpreter printed.</p>
+    </footer>
+
+    <script>window.STRINGS = {"running": "running…", "problems": "problem(s)", "agree": "both back ends agree", "disagree": "the two back ends disagree", "loadingPython": "loading Python…", "loadingCompiler": "loading the compiler…", "noBundle": "py/playground.zip is missing — run `make -C examples web`", "linkCopied": "link copied", "linkInBar": "the link is in the address bar", "bootHelp": "The page needs an HTTP server and a network fetch of Pyodide.\nServe it with `make -C examples ocaml-docs-serve`, or bump PYODIDE_VERSION in app.js.", "recording": "recording…", "steps": "steps recorded", "truncated": "stopped recording at", "evaluating": "evaluating", "gives": "gives", "nothingBound": "nothing bound here yet", "nothingMutable": "nothing mutable here yet", "notYet": "not started"};</script>
+    <script src="app.js"></script>
+  </body>
+</html>

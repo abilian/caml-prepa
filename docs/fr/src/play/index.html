@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>caml-prépa — bac à sable</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>caml-prépa <small>bac à sable</small></h1>
+      <p>Un compilateur pour le sous-ensemble d'OCaml enseigné en classes préparatoires, qui tourne dans votre navigateur. L'analyseur, le vérificateur de types, l'interpréteur et le back-end Python sont ceux que teste la suite de tests ; les arbres de portées de l'onglet <strong>Noms</strong> sont dérivés par <a href="https://astero.lab.abilian.com">astero</a> d'une seule déclaration.</p>
+      <nav>
+        <a href="../">caml-prépa</a>
+        <a href="../language/playground/">Mode d'emploi</a>
+        <a href="../language/tour/">Le langage</a>
+        <a href="../language/reference/">Aide-mémoire</a>
+        <a class="switch" href="../../en/play/" data-lang="en"
+          >English</a
+        >
+      </nav>
+    </header>
+
+    <div class="bar">
+      <label for="example">Programme</label>
+      <select id="example" disabled></select>
+      <button id="run-button" disabled>Exécuter</button>
+      <button id="share" class="quiet" disabled>Copier le lien</button>
+      <span id="status" role="status">démarrage…</span>
+    </div>
+
+    <main>
+      <section class="pane">
+        <h2>Source</h2>
+        <textarea
+          id="source"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          aria-label="Source"
+        ></textarea>
+      </section>
+
+      <section class="pane">
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-view="run">Exécution</button>
+          <button role="tab" aria-selected="false" data-view="types">Types</button>
+          <button role="tab" aria-selected="false" data-view="names">Noms</button>
+          <button role="tab" aria-selected="false" data-view="python">Python</button>
+          <button role="tab" aria-selected="false" data-view="printed">Réécrit</button>
+          <button role="tab" aria-selected="false" data-view="step">Pas à pas</button>
+        </div>
+        <p id="errors" hidden></p>
+        <pre id="run" class="view"></pre>
+        <pre id="types" class="view" hidden></pre>
+        <pre id="names" class="view" hidden></pre>
+        <pre id="python" class="view" hidden></pre>
+        <pre id="printed" class="view" hidden></pre>
+
+        <div id="step" class="view" hidden>
+          <div class="transport">
+            <button data-step="start" title="Premier pas">&#x23ee;</button>
+            <button data-step="out" title="Sortir de l'appel">&#x21b0;</button>
+            <button data-step="back" title="Un pas en arrière">&#x25c0;</button>
+            <button data-step="forward" title="Un pas en avant">&#x25b6;</button>
+            <button data-step="in" title="Entrer dans l'appel">&#x21b3;</button>
+            <button data-step="end" title="Dernier pas">&#x23ed;</button>
+            <input id="step-at" type="range" min="0" max="0" value="0"
+                   aria-label="Position dans l'exécution" />
+            <span id="step-count" class="count"></span>
+            <button id="step-cursor" class="quiet">Jusqu'au curseur</button>
+          </div>
+          <p id="step-note" hidden></p>
+          <pre id="step-source" class="mirror"></pre>
+          <p id="step-where"></p>
+          <div class="step-grid">
+            <section>
+              <h3>Noms visibles</h3>
+              <table id="step-env"></table>
+            </section>
+            <section>
+              <h3>Cases modifiables</h3>
+              <table id="step-store"></table>
+            </section>
+          </div>
+          <h3>Le Python compilé, à ce moment</h3>
+          <pre id="step-python" class="mirror"></pre>
+          <h3>Affiché jusqu'ici</h3>
+          <pre id="step-output"></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Entrée</kbd> exécute. <strong>Types</strong>, c'est Hindley-Milner avec la restriction aux valeurs. <strong>Python</strong>, c'est ce qu'émet le second back-end, et il est exécuté lui aussi : la ligne d'état dit s'il a affiché la même chose que l'interpréteur.</p>
+    </footer>
+
+    <script>window.STRINGS = {"running": "exécution…", "problems": "problème(s)", "agree": "les deux exécutions concordent", "disagree": "les deux exécutions divergent", "loadingPython": "chargement de Python…", "loadingCompiler": "chargement du compilateur…", "noBundle": "py/playground.zip est absent — lancez `make -C examples web`", "linkCopied": "lien copié", "linkInBar": "le lien est dans la barre d'adresse", "bootHelp": "La page a besoin d'un serveur HTTP et d'un accès réseau pour charger Pyodide.\nLancez `make -C examples ocaml-docs-serve`, ou changez PYODIDE_VERSION dans app.js.", "recording": "enregistrement…", "steps": "pas enregistrés", "truncated": "enregistrement arrêté à", "evaluating": "évalue", "gives": "donne", "nothingBound": "rien de lié ici pour l'instant", "nothingMutable": "rien de modifiable ici pour l'instant", "notYet": "pas encore commencé"};</script>
+    <script src="app.js"></script>
+  </body>
+</html>
