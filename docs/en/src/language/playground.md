@@ -2,7 +2,7 @@
 
 [Open it](../play/), then come back here when something is puzzling.
 
-Type a programme on the left and press <kbd>Ctrl</kbd> or <kbd>⌘</kbd> + <kbd>Enter</kbd>, or click **Run**. The **Programme** dropdown loads any of the sixty worked examples, each of which runs as it stands.
+The **Programme** list loads any of the sixty worked examples and runs it straight away. Edit the source and the views dim, because they describe the old version: press **Run**, or <kbd>Ctrl</kbd> or <kbd>⌘</kbd> + <kbd>Enter</kbd>, to bring them up to date. **Run** is greyed out while there is nothing new to run.
 
 Everything happens in your browser. The page uploads nothing, stores nothing, and needs no OCaml on the far end: the compiler is written in Python, which runs in your tab.
 
@@ -38,20 +38,22 @@ You get `'_weak1 list ref`, not `'a list ref`. If it were `'a`, the same cell co
 
 This view draws the scope tree, one per namespace. It is the view no other OCaml playground has.
 
-Each block shows what it binds:
+Each line is a part of the programme that opens a scope, with the line it starts on and the names it introduces there:
 
-| block | what it is |
+| label | what it is |
 | --- | --- |
-| `module top` | the whole file |
-| `binding` | a function's parameters |
-| `case` | one arm of a `match` |
-| `fun` | an anonymous function's parameters |
-| `let` | the body of a `let ... in` |
-| `for` | a loop's index |
+| the whole programme | the top level of the file |
+| let `f` | the parameters of the function `f` |
+| match case | one arm of a `match`, `function` or `try` |
+| fun | the parameters of an anonymous function |
+| let … in | the body of a `let ... in` |
+| for loop `i` | a loop and its index |
+
+Click a line to select it in the source.
 
 Reading it answers the questions people actually get stuck on. Which `x` does this `x` refer to? Does this recursive call resolve? Does that parameter escape the function? The tree says so, without you having to reason it out.
 
-There are **five** trees, because OCaml keeps five kinds of name apart: values, constructors, record fields, type names and type variables. A record label `x` and a variable `x` are unrelated names in OCaml, so they are in different trees. Constructors and exceptions share one, because OCaml shares it.
+There is one section per kind of name, because OCaml keeps five apart: values, constructors, record fields, type names and type variables. A record label `x` and a variable `x` are unrelated names in OCaml, so they are in different sections. Constructors and exceptions share one, because OCaml shares it. A section with nothing in it is left out.
 
 Anything the compiler could not find is listed above the trees.
 
@@ -63,7 +65,7 @@ Where you see `_rt.BINARY_OPS['/']` in place of a plain `/`, the two languages d
 
 Names get freshened, so a shadowing `let x = ...` comes out as `x_2`. That is what keeps an earlier closure reading the `x` it captured.
 
-### Printed
+### Read back
 
 Your source, printed back out of the tree the compiler built. It is how you check that it read what you meant: if a bracket appears that you did not type, the grouping was not what you thought.
 
@@ -90,9 +92,9 @@ A long run stops recording after five thousand steps and says so. The programme 
 
 ## Sharing
 
-**Copy link** puts your whole programme into the URL, after `#code=`, and copies it. Anybody opening that link sees your code.
+The address bar always names what is on the page. A worked example as it stands has a short link, such as `#example=fact`. Once you edit it, the address loses its `#` part until you press **Copy link**, which puts your whole programme into the URL after `#z=`, compressed, and copies it. Anybody opening that link sees your code.
 
-Nothing is stored anywhere; the programme travels in the link itself, so a very long programme makes a very long link.
+Nothing is stored anywhere; the programme travels in the link itself, so a long programme still makes a long link, about a third of its length in characters.
 
 ## When something goes wrong
 

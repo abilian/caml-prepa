@@ -30,6 +30,12 @@
   box-sizing: border-box;
 }
 
+/* An element's own `display` beats the browser's rule for `hidden`, which
+   is how the Step panel came to show under every tab. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   padding: 1.5rem clamp(1rem, 4vw, 3rem) 2rem;
@@ -183,6 +189,77 @@ textarea:focus {
   overflow: auto;
   font: 13px/1.6 var(--mono);
   white-space: pre;
+}
+
+/* The views after an edit, until Run brings them up to date. */
+.stale .view,
+.stale .hint {
+  opacity: 0.45;
+}
+
+/* One sentence under the tabs saying what the view shows. */
+.hint {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+.hint code {
+  font: 0.95em var(--mono);
+}
+
+/* A long line of the read-back source is still one line of the programme,
+   and scrolling sideways to find its end is what made the view unreadable. */
+#printed {
+  white-space: pre-wrap;
+}
+
+/* ------------------------------------------------------------- names view */
+
+#names {
+  white-space: normal;
+  font: 14px/1.5 var(--sans);
+}
+#names h3 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+#names section + section {
+  margin-top: 1rem;
+}
+.scope-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.scope-row:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+.scope-row .what {
+  flex: 0 0 auto;
+  min-width: 14rem;
+}
+.scope-row .what code,
+.scope-row .names {
+  font: 13px/1.5 var(--mono);
+}
+.scope-row .where {
+  color: var(--faint);
+  font-size: 0.8rem;
+}
+.scope-row .names.none {
+  color: var(--faint);
+}
+.unbound {
+  margin: 0 0 0.8rem;
+  color: var(--bad);
+  font: 13px/1.5 var(--mono);
 }
 
 #errors {
@@ -360,6 +437,7 @@ nav a.switch {
 /* The source and the emitted Python, shown read-only so a span can be
    marked. The textarea beside it stays the thing you type in. */
 .mirror {
+  position: relative;
   margin: 0 0 0.6rem;
   padding: 0.5rem;
   border-radius: 4px;
@@ -389,7 +467,17 @@ nav a.switch {
 #step-where {
   margin: 0 0 0.6rem;
   font-size: 0.85rem;
-  opacity: 0.85;
+}
+#step-where div {
+  display: flex;
+  gap: 0.6rem;
+}
+#step-where .label {
+  flex: 0 0 6rem;
+  color: var(--faint);
+}
+#step-where code {
+  font: 0.95em var(--mono);
 }
 
 #step-note {
@@ -454,5 +542,16 @@ nav a.switch {
   }
   #step-note {
     color: #f88;
+  }
+}
+
+/* On a phone the names go under the label, so neither column is squeezed. */
+@media (max-width: 40rem) {
+  .scope-row {
+    flex-wrap: wrap;
+    gap: 0 1rem;
+  }
+  .scope-row .what {
+    min-width: 0;
   }
 }

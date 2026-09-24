@@ -9,7 +9,7 @@
   <body>
     <header>
       <h1>caml-prépa <small>bac à sable</small></h1>
-      <p>Un compilateur pour le sous-ensemble d'OCaml enseigné en classes préparatoires, qui tourne dans votre navigateur. L'analyseur, le vérificateur de types, l'interpréteur et le back-end Python sont ceux que teste la suite de tests ; les arbres de portées de l'onglet <strong>Noms</strong> sont dérivés par <a href="https://astero.lab.abilian.com">astero</a> d'une seule déclaration.</p>
+      <p>Écrivez de l'OCaml à gauche, tel qu'on l'enseigne en classes préparatoires. À droite, le compilateur montre ce qu'affiche le programme, les types qu'il a trouvés, où chaque nom est visible, le Python qu'il en tire, et l'exécution pas à pas. Tout se passe dans votre navigateur.</p>
       <nav>
         <a href="../">caml-prépa</a>
         <a href="../language/playground/">Mode d'emploi</a>
@@ -24,7 +24,7 @@
     <div class="bar">
       <label for="example">Programme</label>
       <select id="example" disabled></select>
-      <button id="run-button" disabled>Exécuter</button>
+      <button id="run-button" title="Exécuter à nouveau le source après l'avoir modifié (Ctrl/⌘ + Entrée)" disabled>Exécuter</button>
       <button id="share" class="quiet" disabled>Copier le lien</button>
       <span id="status" role="status">démarrage…</span>
     </div>
@@ -41,7 +41,7 @@
         ></textarea>
       </section>
 
-      <section class="pane">
+      <section class="pane" id="views">
         <div class="tabs" role="tablist">
           <button role="tab" aria-selected="true" data-view="run">Exécution</button>
           <button role="tab" aria-selected="false" data-view="types">Types</button>
@@ -50,29 +50,35 @@
           <button role="tab" aria-selected="false" data-view="printed">Réécrit</button>
           <button role="tab" aria-selected="false" data-view="step">Pas à pas</button>
         </div>
+        <p class="hint" data-hint="run">Ce qu'affiche le programme. Il est exécuté deux fois, par l'interpréteur et sous forme de Python compilé, et la ligne en haut à droite dit si les deux ont affiché la même chose.</p>
+        <p class="hint" data-hint="types" hidden>Le type de chaque définition de premier niveau, trouvé par le compilateur. <code>'a</code> veut dire « n'importe quel type ».</p>
+        <p class="hint" data-hint="names" hidden>Où chaque nom peut servir. Chaque ligne est une partie du programme qui ouvre une portée, avec les noms qu'elle y introduit. Cliquez sur une ligne pour la retrouver dans le source.</p>
+        <p class="hint" data-hint="python" hidden>Le même programme, traduit en Python par le compilateur.</p>
+        <p class="hint" data-hint="printed" hidden>Votre programme, réécrit à partir de l'arbre que le compilateur a construit. Une parenthèse que vous n'aviez pas écrite montre comment il a groupé votre code.</p>
+        <p class="hint" data-hint="step" hidden>L'exécution, une évaluation à la fois. Le jaune marque l'expression sur le point d'être évaluée, le vert celle qui vient de produire sa valeur.</p>
         <p id="errors" hidden></p>
         <pre id="run" class="view"></pre>
         <pre id="types" class="view" hidden></pre>
-        <pre id="names" class="view" hidden></pre>
+        <div id="names" class="view" hidden></div>
         <pre id="python" class="view" hidden></pre>
         <pre id="printed" class="view" hidden></pre>
 
         <div id="step" class="view" hidden>
           <div class="transport">
-            <button data-step="start" title="Premier pas">&#x23ee;</button>
-            <button data-step="out" title="Sortir de l'appel">&#x21b0;</button>
-            <button data-step="back" title="Un pas en arrière">&#x25c0;</button>
-            <button data-step="forward" title="Un pas en avant">&#x25b6;</button>
-            <button data-step="in" title="Entrer dans l'appel">&#x21b3;</button>
-            <button data-step="end" title="Dernier pas">&#x23ed;</button>
+            <button data-step="start" title="Premier pas" aria-label="Premier pas">&#x23ee;</button>
+            <button data-step="back" title="Un pas en arrière">&#x25c0; Reculer</button>
+            <button data-step="forward" title="Un pas en avant">Avancer &#x25b6;</button>
+            <button data-step="end" title="Dernier pas" aria-label="Dernier pas">&#x23ed;</button>
+            <button data-step="in" title="Entrer dans l'appel">&#x21b3; Entrer</button>
+            <button data-step="out" title="Sortir de l'appel">&#x21b0; Sortir</button>
             <input id="step-at" type="range" min="0" max="0" value="0"
                    aria-label="Position dans l'exécution" />
             <span id="step-count" class="count"></span>
-            <button id="step-cursor" class="quiet">Jusqu'au curseur</button>
+            <button id="step-cursor" class="quiet" title="Aller au premier pas situé dans la sélection du source">Aller au curseur</button>
           </div>
           <p id="step-note" hidden></p>
           <pre id="step-source" class="mirror"></pre>
-          <p id="step-where"></p>
+          <div id="step-where"></div>
           <div class="step-grid">
             <section>
               <h3>Noms visibles</h3>
@@ -92,10 +98,10 @@
     </main>
 
     <footer>
-      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Entrée</kbd> exécute. <strong>Types</strong>, c'est Hindley-Milner avec la restriction aux valeurs. <strong>Python</strong>, c'est ce qu'émet le second back-end, et il est exécuté lui aussi : la ligne d'état dit s'il a affiché la même chose que l'interpréteur.</p>
+      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Entrée</kbd> exécute. Les arbres de portées de l'onglet <strong>Noms</strong> sont dérivés par <a href="https://astero.lab.abilian.com">astero</a> d'une seule déclaration du langage.</p>
     </footer>
 
-    <script>window.STRINGS = {"running": "exécution…", "problems": "problème(s)", "agree": "les deux exécutions concordent", "disagree": "les deux exécutions divergent", "loadingPython": "chargement de Python…", "loadingCompiler": "chargement du compilateur…", "noBundle": "py/playground.zip est absent — lancez `make -C examples web`", "linkCopied": "lien copié", "linkInBar": "le lien est dans la barre d'adresse", "bootHelp": "La page a besoin d'un serveur HTTP et d'un accès réseau pour charger Pyodide.\nLancez `make -C examples ocaml-docs-serve`, ou changez PYODIDE_VERSION dans app.js.", "recording": "enregistrement…", "steps": "pas enregistrés", "truncated": "enregistrement arrêté à", "evaluating": "évalue", "gives": "donne", "nothingBound": "rien de lié ici pour l'instant", "nothingMutable": "rien de modifiable ici pour l'instant", "notYet": "pas encore commencé"};</script>
+    <script>window.STRINGS = {"running": "exécution…", "problems": "problème(s)", "agree": "✓ l'interpréteur et le Python compilé concordent", "disagree": "✗ l'interpréteur et le Python compilé divergent", "loadingPython": "chargement de Python…", "loadingCompiler": "chargement du compilateur…", "noBundle": "py/playground.zip est absent — lancez `make -C examples web`", "linkCopied": "lien copié", "linkInBar": "le lien est dans la barre d'adresse", "bootHelp": "La page a besoin d'un serveur HTTP et d'un accès réseau pour charger Pyodide.\nLancez `make -C examples ocaml-docs-serve`, ou changez PYODIDE_VERSION dans app.js.", "edited": "source modifié : cliquez sur Exécuter pour mettre les vues à jour", "mine": "(votre propre code)", "recording": "enregistrement…", "steps": "pas enregistrés", "truncated": "enregistrement arrêté à", "evaluating": "Évalue", "gives": "Résultat", "nothingBound": "rien de lié ici pour l'instant", "nothingMutable": "rien de modifiable ici pour l'instant", "notYet": "pas encore commencé", "calls": "Appels", "scope": "Portée", "line": "ligne", "groupExamples": "Exemples", "groupSimonet": "Les TP de Vincent Simonet", "groupGrimaud": "Informatique MPI", "kind_module": "le programme entier", "kind_binding": "let", "kind_let": "let … in", "kind_case": "cas de filtrage", "kind_fun": "fun", "kind_for": "boucle for", "ns_vals": "Valeurs", "ns_cons": "Constructeurs et exceptions", "ns_fields": "Champs d'enregistrement", "ns_types": "Noms de types", "ns_tyvars": "Variables de type"};</script>
     <script src="app.js"></script>
   </body>
 </html>

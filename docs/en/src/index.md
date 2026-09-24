@@ -30,10 +30,10 @@ Most compilers are a black box: source goes in, a result comes out, and if you a
 You wrote a function and OCaml says it has some type you did not expect? Ask what type it inferred, and for which sub-expression. You are not sure which `x` the `x` on line 12 refers to? The scope tree says so:
 
 ```
-module    top              {sum}
-  binding                    {l}
-    case                       {}
-    case                       {rest, t}
+the whole programme          sum
+  let sum · line 1           l
+    match case · line 3      —
+    match case · line 4      rest, t
 ```
 
 That says: the file defines `sum`, `l` exists inside it, and `rest` and `t` exist inside the second `match` arm and nowhere else.

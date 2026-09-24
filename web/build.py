@@ -44,13 +44,11 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "title": "caml-prépa — playground",
         "heading": "caml-prépa <small>playground</small>",
         "blurb": (
-            "A compiler for the OCaml subset taught in French "
-            "<em>classes préparatoires</em>, running in your browser. The "
-            "parser, the type checker, the interpreter and the Python back "
-            "end are the ones the test suite runs; the scope trees under "
-            "<strong>Names</strong> are derived by "
-            '<a href="https://astero.lab.abilian.com">astero</a> from one '
-            "declaration."
+            "Write OCaml on the left, as taught in French "
+            "<em>classes préparatoires</em>. On the right, the compiler shows "
+            "what the programme prints, the types it worked out, where each "
+            "name is visible, the Python it translates to, and the run one "
+            "step at a time. Everything happens in your browser."
         ),
         "nav_home": "caml-prépa",
         "nav_guide": "How to use this",
@@ -61,6 +59,7 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "switch_label": "Français",
         "programme": "Programme",
         "run": "Run",
+        "run_title": "Run the source again after editing it (Ctrl/\u2318 + Enter)",
         "share": "Copy link",
         "starting": "starting…",
         "source": "Source",
@@ -68,7 +67,7 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "tab_types": "Types",
         "tab_names": "Names",
         "tab_python": "Python",
-        "tab_printed": "Printed",
+        "tab_printed": "Read back",
         "tab_step": "Step",
         "step_start": "First step",
         "step_out": "Out of this call",
@@ -77,31 +76,79 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "step_in": "Into the next call",
         "step_end": "Last step",
         "step_at": "Position in the run",
-        "step_cursor": "Run to cursor",
+        "step_cursor": "Go to cursor",
+        "step_cursor_title": (
+            "Jump to the first step inside what is selected in the source"
+        ),
+        "step_back_short": "Back",
+        "step_forward_short": "Next",
+        "step_in_short": "Into call",
+        "step_out_short": "Out of call",
+        "hint_run": (
+            "What the programme prints. It runs twice, once by the "
+            "interpreter and once as compiled Python, and the line at the top "
+            "right says whether both printed the same thing."
+        ),
+        "hint_types": (
+            "The type of every top-level definition, worked out by the "
+            "compiler. <code>'a</code> means any type."
+        ),
+        "hint_names": (
+            "Where each name can be used. Each line is a part of the programme "
+            "that opens a scope, with the names it introduces there. Click a "
+            "line to find it in the source."
+        ),
+        "hint_python": "The same programme, translated into Python by the compiler.",
+        "hint_printed": (
+            "Your programme, written back out from the tree the compiler "
+            "built. A bracket you did not write shows how it grouped your code."
+        ),
+        "hint_step": (
+            "The run, one evaluation at a time. Yellow marks the expression "
+            "about to be evaluated, green one that has just produced its value."
+        ),
         "step_env": "Names in scope",
         "step_store": "Mutable cells",
         "step_python": "The compiled Python, at this point",
         "step_output": "Printed so far",
         "footer": (
-            "<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs. "
-            "<strong>Types</strong> is Hindley-Milner with the value "
-            "restriction. <strong>Python</strong> is what the second back end "
-            "emits, and it is executed too: the status line says whether it "
-            "printed what the interpreter printed."
+            "<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs. The scope "
+            "trees under <strong>Names</strong> are derived by "
+            '<a href="https://astero.lab.abilian.com">astero</a> from one '
+            "declaration of the language."
         ),
         "running": "running…",
         "problems": "problem(s)",
-        "agree": "both back ends agree",
-        "disagree": "the two back ends disagree",
+        "agree": "\u2713 interpreter and compiled Python agree",
+        "disagree": "\u2717 interpreter and compiled Python disagree",
         "loadingPython": "loading Python…",
         "loadingCompiler": "loading the compiler…",
         "noBundle": "py/playground.zip is missing — run `make -C examples web`",
         "linkCopied": "link copied",
+        "edited": "source edited: press Run to update the views",
+        "mine": "(your own code)",
         "recording": "recording\u2026",
         "steps": "steps recorded",
         "truncated": "stopped recording at",
-        "evaluating": "evaluating",
-        "gives": "gives",
+        "evaluating": "Evaluating",
+        "gives": "Result",
+        "calls": "Calls",
+        "scope": "Scope",
+        "line": "line",
+        "groupExamples": "Examples",
+        "groupSimonet": "Vincent Simonet's exercises",
+        "groupGrimaud": "Informatique MPI",
+        "kind_module": "the whole programme",
+        "kind_binding": "let",
+        "kind_let": "let \u2026 in",
+        "kind_case": "match case",
+        "kind_fun": "fun",
+        "kind_for": "for loop",
+        "ns_vals": "Values",
+        "ns_cons": "Constructors and exceptions",
+        "ns_fields": "Record fields",
+        "ns_types": "Type names",
+        "ns_tyvars": "Type variables",
         "nothingBound": "nothing bound here yet",
         "nothingMutable": "nothing mutable here yet",
         "notYet": "not started",
@@ -117,13 +164,11 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "title": "caml-prépa — bac à sable",
         "heading": "caml-prépa <small>bac à sable</small>",
         "blurb": (
-            "Un compilateur pour le sous-ensemble d'OCaml enseigné en classes "
-            "préparatoires, qui tourne dans votre navigateur. L'analyseur, le "
-            "vérificateur de types, l'interpréteur et le back-end Python sont "
-            "ceux que teste la suite de tests ; les arbres de portées de "
-            "l'onglet <strong>Noms</strong> sont dérivés par "
-            '<a href="https://astero.lab.abilian.com">astero</a> d\'une seule '
-            "déclaration."
+            "Écrivez de l'OCaml à gauche, tel qu'on l'enseigne en classes "
+            "préparatoires. À droite, le compilateur montre ce qu'affiche le "
+            "programme, les types qu'il a trouvés, où chaque nom est visible, "
+            "le Python qu'il en tire, et l'exécution pas à pas. Tout se passe "
+            "dans votre navigateur."
         ),
         "nav_home": "caml-prépa",
         "nav_guide": "Mode d'emploi",
@@ -134,6 +179,9 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "switch_label": "English",
         "programme": "Programme",
         "run": "Exécuter",
+        "run_title": (
+            "Exécuter à nouveau le source après l'avoir modifié (Ctrl/\u2318 + Entrée)"
+        ),
         "share": "Copier le lien",
         "starting": "démarrage…",
         "source": "Source",
@@ -150,31 +198,79 @@ PLAYGROUND: dict[str, dict[str, str]] = {
         "step_in": "Entrer dans l'appel",
         "step_end": "Dernier pas",
         "step_at": "Position dans l'exécution",
-        "step_cursor": "Jusqu'au curseur",
+        "step_cursor": "Aller au curseur",
+        "step_cursor_title": ("Aller au premier pas situé dans la sélection du source"),
+        "step_back_short": "Reculer",
+        "step_forward_short": "Avancer",
+        "step_in_short": "Entrer",
+        "step_out_short": "Sortir",
+        "hint_run": (
+            "Ce qu'affiche le programme. Il est exécuté deux fois, par "
+            "l'interpréteur et sous forme de Python compilé, et la ligne en "
+            "haut à droite dit si les deux ont affiché la même chose."
+        ),
+        "hint_types": (
+            "Le type de chaque définition de premier niveau, trouvé par le "
+            "compilateur. <code>'a</code> veut dire « n'importe quel type »."
+        ),
+        "hint_names": (
+            "Où chaque nom peut servir. Chaque ligne est une partie du "
+            "programme qui ouvre une portée, avec les noms qu'elle y "
+            "introduit. Cliquez sur une ligne pour la retrouver dans le source."
+        ),
+        "hint_python": "Le même programme, traduit en Python par le compilateur.",
+        "hint_printed": (
+            "Votre programme, réécrit à partir de l'arbre que le compilateur a "
+            "construit. Une parenthèse que vous n'aviez pas écrite montre "
+            "comment il a groupé votre code."
+        ),
+        "hint_step": (
+            "L'exécution, une évaluation à la fois. Le jaune marque "
+            "l'expression sur le point d'être évaluée, le vert celle qui vient "
+            "de produire sa valeur."
+        ),
         "step_env": "Noms visibles",
         "step_store": "Cases modifiables",
         "step_python": "Le Python compilé, à ce moment",
         "step_output": "Affiché jusqu'ici",
         "footer": (
-            "<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Entrée</kbd> exécute. "
-            "<strong>Types</strong>, c'est Hindley-Milner avec la restriction "
-            "aux valeurs. <strong>Python</strong>, c'est ce qu'émet le second "
-            "back-end, et il est exécuté lui aussi : la ligne d'état dit s'il "
-            "a affiché la même chose que l'interpréteur."
+            "<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Entrée</kbd> exécute. Les "
+            "arbres de portées de l'onglet <strong>Noms</strong> sont dérivés "
+            'par <a href="https://astero.lab.abilian.com">astero</a> d\'une '
+            "seule déclaration du langage."
         ),
         "running": "exécution…",
         "problems": "problème(s)",
-        "agree": "les deux exécutions concordent",
-        "disagree": "les deux exécutions divergent",
+        "agree": "\u2713 l'interpréteur et le Python compilé concordent",
+        "disagree": "\u2717 l'interpréteur et le Python compilé divergent",
         "loadingPython": "chargement de Python…",
         "loadingCompiler": "chargement du compilateur…",
         "noBundle": "py/playground.zip est absent — lancez `make -C examples web`",
         "linkCopied": "lien copié",
+        "edited": "source modifié : cliquez sur Exécuter pour mettre les vues à jour",
+        "mine": "(votre propre code)",
         "recording": "enregistrement\u2026",
         "steps": "pas enregistrés",
         "truncated": "enregistrement arrêté à",
-        "evaluating": "évalue",
-        "gives": "donne",
+        "evaluating": "Évalue",
+        "gives": "Résultat",
+        "calls": "Appels",
+        "scope": "Portée",
+        "line": "ligne",
+        "groupExamples": "Exemples",
+        "groupSimonet": "Les TP de Vincent Simonet",
+        "groupGrimaud": "Informatique MPI",
+        "kind_module": "le programme entier",
+        "kind_binding": "let",
+        "kind_let": "let \u2026 in",
+        "kind_case": "cas de filtrage",
+        "kind_fun": "fun",
+        "kind_for": "boucle for",
+        "ns_vals": "Valeurs",
+        "ns_cons": "Constructeurs et exceptions",
+        "ns_fields": "Champs d'enregistrement",
+        "ns_types": "Noms de types",
+        "ns_tyvars": "Variables de type",
         "nothingBound": "rien de lié ici pour l'instant",
         "nothingMutable": "rien de modifiable ici pour l'instant",
         "notYet": "pas encore commencé",
@@ -187,12 +283,24 @@ PLAYGROUND: dict[str, dict[str, str]] = {
     },
 }
 
+#: The playground lists the corpus in these sets, by the directory each
+#: programme sits in. The keys name the heading in `PLAYGROUND`.
+GROUPS = {
+    "groupExamples": "corpus",
+    "groupSimonet": "simonet",
+    "groupGrimaud": "grimaud",
+}
+
 #: What `app.js` reads out of `window.STRINGS`. The rest fills the page.
 RUNTIME_STRINGS = (
     "running", "problems", "agree", "disagree", "loadingPython",
     "loadingCompiler", "noBundle", "linkCopied", "linkInBar", "bootHelp",
+    "edited", "mine",
     "recording", "steps", "truncated", "evaluating", "gives",
-    "nothingBound", "nothingMutable", "notYet",
+    "nothingBound", "nothingMutable", "notYet", "calls", "scope", "line",
+    "groupExamples", "groupSimonet", "groupGrimaud",
+    "kind_module", "kind_binding", "kind_let", "kind_case", "kind_fun",
+    "kind_for", "ns_vals", "ns_cons", "ns_fields", "ns_types", "ns_tyvars",
 )  # fmt: skip
 
 
@@ -300,6 +408,12 @@ def main(target: Path = BUNDLE) -> Path:
         programmes = sorted((EXAMPLE / "corpus").rglob("*.ml"))
         for path in programmes:
             bundle.write(path, f"corpus/{path.name}")
+        # Which set each programme belongs to, for the page's grouped list.
+        groups = {
+            group: [p.name for p in programmes if p.parent.name == folder]
+            for group, folder in GROUPS.items()
+        }
+        bundle.writestr("corpus/groups.json", json.dumps(groups))
         # `grimaud/` is copied under the GPL-3.0, which travels with the
         # copies. Not a `.ml`, so the page does not list it.
         bundle.write(EXAMPLE / "corpus/grimaud/LICENSE", "corpus/LICENSE.grimaud")

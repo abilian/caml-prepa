@@ -14,7 +14,7 @@
 
 [project]
 site_name = "caml-prépa"
-site_url = "https://ocaml-prepa.lab.abilian.com/fr/"
+site_url = "https://caml-prepa.lab.abilian.com/fr/"
 copyright = "Copyright &copy; 2026 Stefane Fermigier, Apache-2.0"
 site_description = "Un compilateur pour le sous-ensemble d'OCaml enseigné en classes préparatoires, avec un bac à sable qui tourne dans le navigateur."
 docs_dir = "fr/src"

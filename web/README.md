@@ -1,8 +1,9 @@
 # caml-prépa — browser playground
 
-The compiler of `examples/ocaml/` running in a browser, with five views of
+The compiler of `examples/ocaml/` running in a browser, with six views of
 the same programme: what it prints, the types it infers, the scopes astero
-derives, the Python it compiles to, and the source printed back out.
+derives, the Python it compiles to, the source read back from the tree, and
+the run one step at a time.
 
 It runs the emitted Python as well as interpreting the tree, and the status
 line says whether the two agreed. That is the differential test from
@@ -40,7 +41,8 @@ is one zip and one `unpackArchive` call:
 
 - `index.html` — the playground
 - `style.css` — palette on `:root`, redefined once for dark
-- `app.js` — Pyodide boot, the five views, `#code=` sharing
+- `app.js` — Pyodide boot, the six views, links (`#example=` for a worked
+  example, `#z=` for deflated source)
 - `build.py` — the bundler, and the reference-card generator
 - `py/playground.zip` — the bundle (built; not in the repository)
 
@@ -57,7 +59,7 @@ playground is copied in by the `web` target rather than served from here.
 ## Where the help pages went
 
 The playground is one page of a site: `../docs/` holds the language tour,
-the guide to these five views, and the reference card. `make -C .. ocaml-docs`
+the guide to these six views, and the reference card. `make -C .. ocaml-docs`
 builds that site and copies this directory into it at `/play/`, which is why
 the header links here are `../language/...`.
 

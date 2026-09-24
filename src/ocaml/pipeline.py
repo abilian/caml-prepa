@@ -23,6 +23,7 @@ import io
 from collections.abc import Iterator
 from typing import Any
 
+from . import syntax
 from .back import compile as backend, interpret, stepper
 from .front import emit
 from .front.parser import parse
@@ -55,11 +56,48 @@ def scopes(tree: Any) -> str:
     )
 
 
+def scope_rows(tree: Any, source: str) -> list[dict[str, Any]]:
+    """The same trees as `scopes`, as rows the playground can label.
+
+    One row per block: its depth, its kind, the name it defines if it has
+    one, the source line it starts on, and the names it binds. A namespace
+    where nothing is bound anywhere is left out, which for most programmes
+    is the type variables.
+    """
+    out = []
+    for ns in grammar.NAMESPACES:
+        rows: list[list[Any]] = []
+        _rows(analyze.blocks(tree, ns), 0, source, rows)
+        if any(names for *_, names in rows):
+            out.append({"ns": ns, "rows": rows})
+    return out
+
+
+def _rows(block: Any, depth: int, source: str, into: list[list[Any]]) -> None:
+    span = getattr(block.node, "span", None)
+    line = source.count("\n", 0, span[0]) + 1 if span else None
+    into.append([depth, block.kind, _defines(block.node), line, sorted(block.owns())])
+    for child in block.children:
+        _rows(child, depth + 1, source, into)
+
+
+def _defines(node: Any) -> str:
+    """The name a block is about: `f` in `let f x = ...`, `i` in a `for`."""
+    match node:
+        case syntax.Binding(pattern=syntax.PVar(name=name)):
+            return name
+        case syntax.For(var=var):
+            return var.name
+    return ""
+
+
 def analyse(source: str) -> dict[str, Any]:
     """Every stage's output, for one programme."""
     found: dict[str, Any] = {
         "printed": "",
         "names": "",
+        "scopes": [],
+        "unbound": [],
         "types": "",
         "python": "",
         "run": "",
@@ -81,6 +119,8 @@ def analyse(source: str) -> dict[str, Any]:
         unbound = analyze.unbound(tree)
         report = "\n".join(unbound) + "\n\n" if unbound else ""
         found["names"] = report + scopes(tree)
+        found["unbound"] = unbound
+        found["scopes"] = scope_rows(tree, source)
 
     with stage(found, "types"):
         found["types"] = "\n".join(infer.signature(tree))

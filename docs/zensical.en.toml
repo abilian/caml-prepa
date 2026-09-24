@@ -14,7 +14,7 @@
 
 [project]
 site_name = "caml-prépa"
-site_url = "https://ocaml-prepa.lab.abilian.com/en/"
+site_url = "https://caml-prepa.lab.abilian.com/en/"
 copyright = "Copyright &copy; 2026 Stefane Fermigier, Apache-2.0"
 site_description = "A compiler for the OCaml subset taught in French classes préparatoires, with a playground you can run in your browser."
 docs_dir = "en/src"

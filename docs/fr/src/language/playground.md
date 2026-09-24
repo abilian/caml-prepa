@@ -2,7 +2,7 @@
 
 [Ouvrez-le](../play/), et revenez ici quand quelque chose vous intrigue.
 
-Tapez un programme à gauche et appuyez sur <kbd>Ctrl</kbd> ou <kbd>⌘</kbd> + <kbd>Entrée</kbd>, ou cliquez sur **Exécuter**. La liste **Programme** charge n'importe lequel des soixante exemples, qui tournent tous tels quels.
+La liste **Programme** charge n'importe lequel des soixante exemples et l'exécute aussitôt. Modifiez le source : les vues s'estompent, parce qu'elles décrivent l'ancienne version. Cliquez sur **Exécuter**, ou appuyez sur <kbd>Ctrl</kbd> ou <kbd>⌘</kbd> + <kbd>Entrée</kbd>, pour les mettre à jour. **Exécuter** reste grisé tant qu'il n'y a rien de nouveau à exécuter.
 
 Tout se passe dans votre navigateur. La page n'envoie ni ne stocke rien, et n'a besoin d'aucun OCaml à l'autre bout : le compilateur est écrit en Python, qui tourne dans votre onglet.
 
@@ -38,20 +38,22 @@ Vous obtenez `'_weak1 list ref`. Si c'était `'a`, on pourrait mettre un `int` d
 
 Cette vue dessine l'arbre des portées, un par espace de noms. C'est la vue qu'aucun autre bac à sable OCaml ne propose.
 
-Chaque bloc indique ce qu'il lie :
+Chaque ligne est une partie du programme qui ouvre une portée, avec la ligne où elle commence et les noms qu'elle y introduit :
 
-| bloc | ce que c'est |
+| libellé | ce que c'est |
 | --- | --- |
-| `module top` | le fichier entier |
-| `binding` | les paramètres d'une fonction |
-| `case` | un cas d'un `match` |
-| `fun` | les paramètres d'une fonction anonyme |
-| `let` | le corps d'un `let ... in` |
-| `for` | l'indice d'une boucle |
+| le programme entier | le premier niveau du fichier |
+| let `f` | les paramètres de la fonction `f` |
+| cas de filtrage | un cas d'un `match`, d'un `function` ou d'un `try` |
+| fun | les paramètres d'une fonction anonyme |
+| let … in | le corps d'un `let ... in` |
+| boucle for `i` | une boucle et son indice |
+
+Cliquez sur une ligne pour la sélectionner dans le source.
 
 Le lire répond aux questions sur lesquelles on bute vraiment. À quel `x` renvoie ce `x` ? Cet appel récursif se résout-il ? Ce paramètre s'échappe-t-il de la fonction ? L'arbre le dit, sans qu'on ait à le reconstituer de tête.
 
-Il y a **cinq** arbres, parce qu'OCaml sépare cinq sortes de noms : valeurs, constructeurs, champs d'enregistrement, noms de types et variables de types. Un champ `x` et une variable `x` sont des noms sans rapport en OCaml, donc ils sont dans des arbres différents. Constructeurs et exceptions en partagent un, parce qu'OCaml le partage.
+Il y a une section par sorte de nom, parce qu'OCaml en sépare cinq : valeurs, constructeurs, champs d'enregistrement, noms de types et variables de types. Un champ `x` et une variable `x` sont des noms sans rapport en OCaml, donc ils sont dans des sections différentes. Constructeurs et exceptions en partagent une, parce qu'OCaml la partage. Une section vide n'est pas affichée.
 
 Ce que le compilateur n'a pas su trouver est listé au-dessus des arbres.
 
@@ -86,13 +88,13 @@ Chaque pas montre :
 
 **↳** et **↰** entrent dans un *appel de fonction* et en sortent, en sautant les sous-expressions intermédiaires. C'est ce qu'un débogueur entend par là : ce qu'on veut quand c'est l'appel récursif que l'on suit. **Jusqu'au curseur** saute au premier pas situé dans ce que vous avez cliqué dans la source.
 
-Une exécution longue arrête d'enregistrer au bout de cinq mille pas et le signale. Le programme va quand même à son terme : ce qui s'arrête, c'est l'enregistrement, pas l'exécution.
+Une exécution longue arrête d'enregistrer au bout de cinq mille pas et le signale. Le programme va quand même à son terme ; seul l'enregistrement s'arrête.
 
 ## Partager
 
-**Copier le lien** met tout votre programme dans l'URL, après `#code=`, et le copie. Quiconque ouvre ce lien voit votre code.
+La barre d'adresse désigne toujours ce qui est dans la page. Un exemple tel quel a un lien court, comme `#example=fact`. Dès que vous le modifiez, l'adresse perd sa partie `#`, jusqu'à ce que vous cliquiez sur **Copier le lien** : il met tout votre programme dans l'URL après `#z=`, compressé, et le copie. Quiconque ouvre ce lien voit votre code.
 
-Rien n'est stocké nulle part ; le programme voyage dans le lien lui-même, donc un très long programme donne un très long lien.
+Rien n'est stocké nulle part ; le programme voyage dans le lien lui-même, si bien qu'un long programme donne encore un long lien, d'environ un tiers de sa longueur en caractères.
 
 ## Quand quelque chose ne va pas
 

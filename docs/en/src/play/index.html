@@ -9,7 +9,7 @@
   <body>
     <header>
       <h1>caml-prépa <small>playground</small></h1>
-      <p>A compiler for the OCaml subset taught in French <em>classes préparatoires</em>, running in your browser. The parser, the type checker, the interpreter and the Python back end are the ones the test suite runs; the scope trees under <strong>Names</strong> are derived by <a href="https://astero.lab.abilian.com">astero</a> from one declaration.</p>
+      <p>Write OCaml on the left, as taught in French <em>classes préparatoires</em>. On the right, the compiler shows what the programme prints, the types it worked out, where each name is visible, the Python it translates to, and the run one step at a time. Everything happens in your browser.</p>
       <nav>
         <a href="../">caml-prépa</a>
         <a href="../language/playground/">How to use this</a>
@@ -24,7 +24,7 @@
     <div class="bar">
       <label for="example">Programme</label>
       <select id="example" disabled></select>
-      <button id="run-button" disabled>Run</button>
+      <button id="run-button" title="Run the source again after editing it (Ctrl/⌘ + Enter)" disabled>Run</button>
       <button id="share" class="quiet" disabled>Copy link</button>
       <span id="status" role="status">starting…</span>
     </div>
@@ -41,38 +41,44 @@
         ></textarea>
       </section>
 
-      <section class="pane">
+      <section class="pane" id="views">
         <div class="tabs" role="tablist">
           <button role="tab" aria-selected="true" data-view="run">Run</button>
           <button role="tab" aria-selected="false" data-view="types">Types</button>
           <button role="tab" aria-selected="false" data-view="names">Names</button>
           <button role="tab" aria-selected="false" data-view="python">Python</button>
-          <button role="tab" aria-selected="false" data-view="printed">Printed</button>
+          <button role="tab" aria-selected="false" data-view="printed">Read back</button>
           <button role="tab" aria-selected="false" data-view="step">Step</button>
         </div>
+        <p class="hint" data-hint="run">What the programme prints. It runs twice, once by the interpreter and once as compiled Python, and the line at the top right says whether both printed the same thing.</p>
+        <p class="hint" data-hint="types" hidden>The type of every top-level definition, worked out by the compiler. <code>'a</code> means any type.</p>
+        <p class="hint" data-hint="names" hidden>Where each name can be used. Each line is a part of the programme that opens a scope, with the names it introduces there. Click a line to find it in the source.</p>
+        <p class="hint" data-hint="python" hidden>The same programme, translated into Python by the compiler.</p>
+        <p class="hint" data-hint="printed" hidden>Your programme, written back out from the tree the compiler built. A bracket you did not write shows how it grouped your code.</p>
+        <p class="hint" data-hint="step" hidden>The run, one evaluation at a time. Yellow marks the expression about to be evaluated, green one that has just produced its value.</p>
         <p id="errors" hidden></p>
         <pre id="run" class="view"></pre>
         <pre id="types" class="view" hidden></pre>
-        <pre id="names" class="view" hidden></pre>
+        <div id="names" class="view" hidden></div>
         <pre id="python" class="view" hidden></pre>
         <pre id="printed" class="view" hidden></pre>
 
         <div id="step" class="view" hidden>
           <div class="transport">
-            <button data-step="start" title="First step">&#x23ee;</button>
-            <button data-step="out" title="Out of this call">&#x21b0;</button>
-            <button data-step="back" title="Back one">&#x25c0;</button>
-            <button data-step="forward" title="Forward one">&#x25b6;</button>
-            <button data-step="in" title="Into the next call">&#x21b3;</button>
-            <button data-step="end" title="Last step">&#x23ed;</button>
+            <button data-step="start" title="First step" aria-label="First step">&#x23ee;</button>
+            <button data-step="back" title="Back one">&#x25c0; Back</button>
+            <button data-step="forward" title="Forward one">Next &#x25b6;</button>
+            <button data-step="end" title="Last step" aria-label="Last step">&#x23ed;</button>
+            <button data-step="in" title="Into the next call">&#x21b3; Into call</button>
+            <button data-step="out" title="Out of this call">&#x21b0; Out of call</button>
             <input id="step-at" type="range" min="0" max="0" value="0"
                    aria-label="Position in the run" />
             <span id="step-count" class="count"></span>
-            <button id="step-cursor" class="quiet">Run to cursor</button>
+            <button id="step-cursor" class="quiet" title="Jump to the first step inside what is selected in the source">Go to cursor</button>
           </div>
           <p id="step-note" hidden></p>
           <pre id="step-source" class="mirror"></pre>
-          <p id="step-where"></p>
+          <div id="step-where"></div>
           <div class="step-grid">
             <section>
               <h3>Names in scope</h3>
@@ -92,10 +98,10 @@
     </main>
 
     <footer>
-      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs. <strong>Types</strong> is Hindley-Milner with the value restriction. <strong>Python</strong> is what the second back end emits, and it is executed too: the status line says whether it printed what the interpreter printed.</p>
+      <p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs. The scope trees under <strong>Names</strong> are derived by <a href="https://astero.lab.abilian.com">astero</a> from one declaration of the language.</p>
     </footer>
 
-    <script>window.STRINGS = {"running": "running…", "problems": "problem(s)", "agree": "both back ends agree", "disagree": "the two back ends disagree", "loadingPython": "loading Python…", "loadingCompiler": "loading the compiler…", "noBundle": "py/playground.zip is missing — run `make -C examples web`", "linkCopied": "link copied", "linkInBar": "the link is in the address bar", "bootHelp": "The page needs an HTTP server and a network fetch of Pyodide.\nServe it with `make -C examples ocaml-docs-serve`, or bump PYODIDE_VERSION in app.js.", "recording": "recording…", "steps": "steps recorded", "truncated": "stopped recording at", "evaluating": "evaluating", "gives": "gives", "nothingBound": "nothing bound here yet", "nothingMutable": "nothing mutable here yet", "notYet": "not started"};</script>
+    <script>window.STRINGS = {"running": "running…", "problems": "problem(s)", "agree": "✓ interpreter and compiled Python agree", "disagree": "✗ interpreter and compiled Python disagree", "loadingPython": "loading Python…", "loadingCompiler": "loading the compiler…", "noBundle": "py/playground.zip is missing — run `make -C examples web`", "linkCopied": "link copied", "linkInBar": "the link is in the address bar", "bootHelp": "The page needs an HTTP server and a network fetch of Pyodide.\nServe it with `make -C examples ocaml-docs-serve`, or bump PYODIDE_VERSION in app.js.", "edited": "source edited: press Run to update the views", "mine": "(your own code)", "recording": "recording…", "steps": "steps recorded", "truncated": "stopped recording at", "evaluating": "Evaluating", "gives": "Result", "nothingBound": "nothing bound here yet", "nothingMutable": "nothing mutable here yet", "notYet": "not started", "calls": "Calls", "scope": "Scope", "line": "line", "groupExamples": "Examples", "groupSimonet": "Vincent Simonet's exercises", "groupGrimaud": "Informatique MPI", "kind_module": "the whole programme", "kind_binding": "let", "kind_let": "let … in", "kind_case": "match case", "kind_fun": "fun", "kind_for": "for loop", "ns_vals": "Values", "ns_cons": "Constructors and exceptions", "ns_fields": "Record fields", "ns_types": "Type names", "ns_tyvars": "Type variables"};</script>
     <script src="app.js"></script>
   </body>
 </html>

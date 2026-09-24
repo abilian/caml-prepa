@@ -30,10 +30,10 @@ Un compilateur, d'ordinaire, est une boîte noire : le source entre, un résulta
 Vous avez écrit une fonction et OCaml lui donne un type auquel vous ne vous attendiez pas ? Demandez quel type il a inféré, et pour quelle sous-expression. Vous ne savez plus à quel `x` renvoie le `x` de la ligne 12 ? L'arbre des portées le dit :
 
 ```
-module    top              {somme}
-  binding                    {l}
-    case                       {}
-    case                       {q, t}
+le programme entier          somme
+  let somme · ligne 1        l
+    cas de filtrage · ligne 3    —
+    cas de filtrage · ligne 4    q, t
 ```
 
 Autrement dit : le fichier définit `somme`, et `l` existe à l'intérieur. `q` et `t` existent dans le second cas du filtrage, et **là seulement**. Plus besoin de deviner.

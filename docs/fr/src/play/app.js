@@ -6,14 +6,38 @@
 const PYODIDE_VERSION = "314.0.6";
 const PYODIDE_URL = `https://cdn.jsdelivr.net/npm/pyodide@${PYODIDE_VERSION}/`;
 const HOME = "/home/pyodide";
-// The text panes, and the tabs. `step` is a panel of controls rather than a
-// block of text, so it is a tab without being something `render` fills in.
-const TEXT_VIEWS = ["run", "types", "names", "python", "printed"];
-const VIEWS = [...TEXT_VIEWS, "step"];
+// The text panes, and the tabs. `names` is drawn from rows and `step` is a
+// panel of controls, so neither is a block of text `render` fills in.
+const TEXT_VIEWS = ["run", "types", "python", "printed"];
+const VIEWS = [...TEXT_VIEWS, "names", "step"];
+// What the page opens on when no link says otherwise: short, and in English
+// and French alike.
+const FIRST = "fact.ml";
 
 // Every string the reader sees. `index.html` carries this edition's,
 // which is how the page is French on /fr/ and English on /en/.
 const S = window.STRINGS;
+
+// The words for what the compiler reports by name.
+const KINDS = {
+  binding: S.kind_binding,
+  let: S.kind_let,
+  case: S.kind_case,
+  fun: S.kind_fun,
+  for: S.kind_for,
+};
+const NAMESPACES = {
+  vals: S.ns_vals,
+  cons: S.ns_cons,
+  fields: S.ns_fields,
+  types: S.ns_types,
+  tyvars: S.ns_tyvars,
+};
+const GROUPS = {
+  groupExamples: S.groupExamples,
+  groupSimonet: S.groupSimonet,
+  groupGrimaud: S.groupGrimaud,
+};
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -37,6 +61,10 @@ const els = {
 
 let analyse = null;
 let stepping = null;
+// The source the views were last computed from, and the corpus text of the
+// programme picked in the list: an edit is anything that differs from them.
+let lastRun = null;
+let picked = null;
 
 function say(text, tone = "") {
   els.status.textContent = text;
@@ -44,35 +72,65 @@ function say(text, tone = "") {
 }
 
 // ------------------------------------------------------------------ sharing
+//
+// A link carries the programme after the `#`, which the browser never sends
+// to a server: `#example=fact` for a corpus programme as it stands, and
+// `#z=...` for anything else, deflated and then base64url-encoded, which is
+// about a third of the length of the source. `#code=` is the older form,
+// base64 without compression, still read so links already shared still open.
 
-function encode(text) {
-  const bytes = new TextEncoder().encode(text);
+const toBase64 = (bytes) => {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
+};
 
-function decode(text) {
+const fromBase64 = (text) => {
   const padded = text.replace(/-/g, "+").replace(/_/g, "/");
   const binary = atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+};
+
+const through = async (bytes, stream) =>
+  new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+
+async function pack(text) {
+  const bytes = new TextEncoder().encode(text);
+  return toBase64(await through(bytes, new CompressionStream("deflate-raw")));
+}
+
+async function unpack(text) {
+  const bytes = await through(fromBase64(text), new DecompressionStream("deflate-raw"));
   return new TextDecoder().decode(bytes);
 }
 
-function fromFragment() {
-  const match = /(?:^|[#&])code=([^&]+)/.exec(location.hash);
-  if (!match) return null;
+// What the fragment asks for: `{ example }`, `{ source }`, or null.
+async function fromFragment() {
+  const found = /(?:^|[#&])(example|z|code)=([^&]+)/.exec(location.hash);
+  if (!found) return null;
+  const [, kind, value] = found;
   try {
-    return decode(match[1]);
+    if (kind === "example") return { example: decodeURIComponent(value) };
+    if (kind === "z") return { source: await unpack(value) };
+    return { source: new TextDecoder().decode(fromBase64(value)) };
   } catch {
     return null;
   }
+}
+
+// The address bar says what is on the page, or nothing: a link left over
+// from another programme would reload the wrong one.
+function setFragment(fragment) {
+  history.replaceState(null, "", `${location.pathname}${fragment ? `#${fragment}` : ""}`);
 }
 
 // -------------------------------------------------------------------- views
 
 function show(name) {
   for (const view of VIEWS) $(view).hidden = view !== name;
+  for (const hint of document.querySelectorAll("[data-hint]")) {
+    hint.hidden = hint.dataset.hint !== name;
+  }
   for (const tab of document.querySelectorAll('[role="tab"]')) {
     tab.setAttribute("aria-selected", String(tab.dataset.view === name));
   }
@@ -85,12 +143,74 @@ function render(found) {
   // it is next opened.
   trace = null;
   for (const view of TEXT_VIEWS) $(view).textContent = found[view] || "";
+  drawScopes(found);
   const problems = found.errors || [];
   els.errors.hidden = problems.length === 0;
   els.errors.textContent = problems.join("\n");
   if (problems.length) show("run");
 }
 
+
+// The Names view, from the rows `pipeline.scope_rows` gives: one per part of
+// the programme that opens a scope, labelled in words, with the line it
+// starts on. Clicking a row selects that line in the source.
+function drawScopes(found) {
+  const view = $("names");
+  view.textContent = "";
+  if (found.unbound && found.unbound.length) {
+    const warn = document.createElement("pre");
+    warn.className = "unbound";
+    warn.textContent = found.unbound.join("\n");
+    view.append(warn);
+  }
+  for (const { ns, rows } of found.scopes || []) {
+    const section = document.createElement("section");
+    const heading = document.createElement("h3");
+    heading.textContent = NAMESPACES[ns] || ns;
+    section.append(heading);
+    for (const [depth, kind, name, line, names] of rows) {
+      section.append(scopeRow(depth, kind, name, line, names));
+    }
+    view.append(section);
+  }
+}
+
+function scopeRow(depth, kind, name, line, names) {
+  const row = document.createElement("div");
+  row.className = "scope-row";
+  row.style.paddingLeft = `${0.3 + depth * 1.4}rem`;
+  const what = document.createElement("span");
+  what.className = "what";
+  what.append(depth === 0 ? S.kind_module : KINDS[kind] || kind);
+  if (name) {
+    const code = document.createElement("code");
+    code.textContent = name;
+    what.append(" ", code);
+  }
+  if (depth > 0 && line) {
+    const where = document.createElement("span");
+    where.className = "where";
+    where.textContent = ` \u00b7 ${S.line} ${line}`;
+    what.append(where);
+    row.addEventListener("click", () => selectLine(line));
+  }
+  const bound = document.createElement("span");
+  bound.className = names.length ? "names" : "names none";
+  bound.textContent = names.length ? names.join(", ") : "\u2014";
+  row.append(what, bound);
+  return row;
+}
+
+function selectLine(line) {
+  const text = els.source.value;
+  let from = 0;
+  for (let n = 1; n < line; n += 1) from = text.indexOf("\n", from) + 1;
+  const to = text.indexOf("\n", from);
+  els.source.focus();
+  els.source.setSelectionRange(from, to < 0 ? text.length : to);
+  const height = parseFloat(getComputedStyle(els.source).lineHeight) || 20;
+  els.source.scrollTop = Math.max(0, (line - 3) * height);
+}
 
 // ------------------------------------------------------------------ stepping
 //
@@ -166,20 +286,30 @@ function draw() {
   els.stepAt.value = String(at);
   els.stepCount.textContent = `${at + 1} / ${trace.steps.length}`;
 
+  let shown = "";
   if (step.span) {
     const [from, to] = step.span;
+    shown = source.slice(from, to);
     els.stepSource.innerHTML =
       escaped(source.slice(0, from)) +
-      `<mark class="${step.kind}">${escaped(source.slice(from, to))}</mark>` +
+      `<mark class="${step.kind}">${escaped(shown)}</mark>` +
       escaped(source.slice(to));
+    // Keep the marked expression in sight: without this it scrolled out of
+    // the box after a few steps and the view seemed to do nothing.
+    const mark = els.stepSource.querySelector("mark");
+    els.stepSource.scrollTop = Math.max(0, mark.offsetTop - els.stepSource.clientHeight / 3);
   } else {
     els.stepSource.textContent = source;
   }
 
-  const verb = step.kind === "enter" ? S.evaluating : S.gives;
-  const tail = step.value === null ? "" : ` ${step.value}`;
-  els.stepWhere.textContent =
-    `${verb}${tail} · ${step.stack.join(" \u25b8 ")} · ${step.scope}`;
+  // Pyodide turns Python's `None` into `undefined`, not `null`.
+  const done = step.kind !== "enter" && step.value != null;
+  const brief = shown.replace(/\s+/g, " ").trim();
+  const said = brief.length > 60 ? `${brief.slice(0, 57)}\u2026` : brief;
+  els.stepWhere.textContent = "";
+  whereLine(done ? S.gives : S.evaluating, said, done ? step.value : null);
+  whereLine(S.calls, step.stack.join(" \u25b8 "));
+  whereLine(S.scope, inWords(step.scope));
 
   rows(els.stepEnv, step.env, S.nothingBound);
   rows(els.stepStore, step.store, S.nothingMutable);
@@ -187,6 +317,26 @@ function draw() {
   const py = pyStepFor(step.printed);
   els.stepPython.textContent = py ? `${py.line}  ${py.text}` : S.notYet;
   els.stepOutput.textContent = trace.output.slice(0, step.printed);
+}
+
+// The scope path the stepper reports, `top ▸ binding ▸ case`, in the words
+// the Names view uses for the same blocks.
+function inWords(path) {
+  return path
+    .split(" \u25b8 ")
+    .map((part) => (part === "top" ? S.kind_module : KINDS[part] || part))
+    .join(" \u25b8 ");
+}
+
+function whereLine(label, code, value = null) {
+  const line = document.createElement("div");
+  const name = document.createElement("span");
+  name.className = "label";
+  name.textContent = label;
+  const text = document.createElement("code");
+  text.textContent = value === null ? code : `${code}  \u21d2  ${value}`;
+  line.append(name, text);
+  els.stepWhere.append(line);
 }
 
 // Step over, in and out count function calls rather than sub-expressions:
@@ -248,6 +398,8 @@ function wireStepping() {
 
 function run() {
   if (!analyse) return;
+  lastRun = els.source.value;
+  edited();
   const started = performance.now();
   say(S.running);
   let found;
@@ -271,6 +423,20 @@ function run() {
 }
 
 // --------------------------------------------------------------------- boot
+
+// After an edit the views describe the old source, so they dim and Run is
+// the one thing to press; with nothing new to run, Run is off.
+function edited() {
+  const changed = els.source.value !== lastRun;
+  els.run.disabled = !changed;
+  $("views").classList.toggle("stale", changed);
+  if (changed) say(S.edited);
+  if (picked !== null && els.source.value !== picked) {
+    picked = null;
+    els.example.value = "";
+    setFragment("");
+  }
+}
 
 function loadScript(url) {
   return new Promise((done, failed) => {
@@ -298,31 +464,59 @@ async function boot() {
   stepping = py.runPython("from ocaml.pipeline import stepping\nstepping");
   wireStepping();
 
-  const programmes = py.FS.readdir(`${HOME}/corpus`)
-    .filter((name) => name.endsWith(".ml"))
-    .sort();
-  for (const name of programmes) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name.replace(/\.ml$/, "");
-    els.example.append(option);
+  // Grouped by the set each programme comes from, as `build.py` wrote it.
+  const groups = JSON.parse(
+    py.FS.readFile(`${HOME}/corpus/groups.json`, { encoding: "utf8" }),
+  );
+  // Selected while the source is not a corpus programme as it stands.
+  const mine = document.createElement("option");
+  mine.value = "";
+  mine.disabled = true;
+  mine.hidden = true;
+  mine.textContent = S.mine;
+  els.example.append(mine);
+  for (const [label, names] of Object.entries(groups)) {
+    const group = document.createElement("optgroup");
+    group.label = GROUPS[label] || label;
+    for (const name of names) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name.replace(/\.ml$/, "");
+      group.append(option);
+    }
+    els.example.append(group);
   }
 
   const load = (name) =>
     py.FS.readFile(`${HOME}/corpus/${name}`, { encoding: "utf8" });
 
+  const known = new Set(Object.values(groups).flat());
+  const pick = (name) => {
+    picked = load(name);
+    els.source.value = picked;
+    els.example.value = name;
+    setFragment(`example=${name.replace(/\.ml$/, "")}`);
+  };
+
   els.example.addEventListener("change", () => {
-    els.source.value = load(els.example.value);
+    pick(els.example.value);
     run();
   });
 
-  const shared = fromFragment();
-  els.source.value = shared !== null ? shared : load(programmes[0]);
-  if (shared === null) els.example.value = programmes[0];
+  const wanted = await fromFragment();
+  const named = wanted && wanted.example ? `${wanted.example}.ml` : null;
+  if (named && known.has(named)) {
+    pick(named);
+  } else if (wanted && wanted.source !== undefined) {
+    els.source.value = wanted.source;
+    els.example.value = "";
+  } else {
+    pick(FIRST);
+  }
 
   els.example.disabled = false;
-  els.run.disabled = false;
   els.share.disabled = false;
+  els.source.addEventListener("input", edited);
   run();
 }
 
@@ -354,8 +548,13 @@ els.source.addEventListener("keydown", (event) => {
 });
 
 els.share.addEventListener("click", async () => {
-  const url = `${location.origin}${location.pathname}#code=${encode(els.source.value)}`;
-  history.replaceState(null, "", url);
+  const name = els.example.value;
+  const fragment =
+    picked !== null && name
+      ? `example=${name.replace(/\.ml$/, "")}`
+      : `z=${await pack(els.source.value)}`;
+  setFragment(fragment);
+  const url = location.href;
   try {
     await navigator.clipboard.writeText(url);
     say(S.linkCopied);

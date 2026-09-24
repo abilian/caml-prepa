@@ -98,7 +98,7 @@ That table gets used a second time, which is the next section.
 
 `front/emit.py` turns a tree back into text. It has two uses. The second is the one that matters.
 
-It shows you what the compiler thought you wrote. Type `1 + 2 * 3` into the playground and look at **Printed**; the brackets tell you how it grouped.
+It shows you what the compiler thought you wrote. Type `1 + 2 * 3` into the playground and look at **Read back**; the brackets tell you how it grouped.
 
 It is also how the parser is *checked*. Print a tree, read the text back, compare the trees:
 
